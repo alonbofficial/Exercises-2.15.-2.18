@@ -1,145 +1,98 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import React from 'react'
+import phonebookService from './services/phonebook'
 
-
-const Filter = (props) => { 
+const Title = ({title}) => <h2>{title}</h2>
+const FilterContacts = ({phonebookList}) => {
 
   const [filter, setFilter] = useState('Filter by name...')
+  const handleFilterChange = (event) => setFilter(event.target.value)
+  const filteredList = phonebookList.filter((el) => el.name.toLowerCase().includes(filter.toLowerCase()));
 
-  const handleFilterChange = (event) => {
-
-    if(true)
-      setFilter(event.target.value)
-    else{
-      alert("You can't continue")
-    }
-  }
-
-  function filterItems(arr, query) {
-    return arr.filter((el) => el.name.toLowerCase().includes(query.toLowerCase()));
-  }
-
-    if(filter === '')
-      return(
-        <div>
-          filter shown with: <input onChange={handleFilterChange} value={filter}/>
-        </div>
-      )  
-    else
-      return(
-        <div>
-          filter shown with: <input onChange={handleFilterChange} value={filter}/>
-          <Persons persons={filterItems(props.arrayOfPersons, filter)}/>
-        </div>
-      )
+  if(filter === '')
+    return(
+      <div>
+        filter shown with: <input onChange={handleFilterChange} value={filter}/>
+      </div>
+    )  
+  else
+    return(
+      <div>
+        filter shown with: <input onChange={handleFilterChange} value={filter}/>
+        <DisplayContacts phonebookList={filteredList}/>
+      </div>
+    )
 }
+const InsertToPhonebook = (props) => {
 
-const PersonForm = (props) => {
+  const [name, setName] = useState('')
+  const [number, setNumber] = useState('')
 
-  const addName = (event) => {
+  function handleNewContactName(contactName){
+    setName(contactName)
+  }
+  function handleNewContactNumber(phoneNumber){
+    setNumber(phoneNumber)
+  }
+  const addContact = event => {
 
     event.preventDefault();
-    
-    if(isDuplicate()){
-      alert(`${props.valueName} is in the list`)
-      props.setNewName('Insert another name here...')
-      props.setNewNumber('Insert another number here...')
-    }
-    else{
-      
-      const nameObject = {
-        name: props.valueName,
-        number: props.valueNumber
-      }
-
-      axios
-      .post('http://localhost:3001/persons', nameObject)
-      .then(response => {
-        console.log(response)
-        
-        props.setNewName(response.data)
-        props.setNewNumber()
-      })
-      .catch(
-        error => {
-          console.log('fail')
-        }
-      )
-
-      props.setPersons(props.persons.concat(nameObject))
-      props.setNewName('Insert another name here...')
-      props.setNewNumber('Insert another number here...')
-    }
-  }
-
-  function isDuplicate(){
-    
-    const arrayOfNames = props.persons.map((person) => person.name)
-
-    if (arrayOfNames.includes(props.valueName))
-      return true
-
-    return false
+    phonebookService.create( { name, number } )
+    .then(response => {
+      props.handlePhonebook(props.phonebookList.concat(response.data)) 
+      setName('')
+      setNumber('')
+    })
   }
 
   return(
-    <form onSubmit={addName}>
-      <div>name: <input onChange={props.onChangeName} value={props.valueName}/></div>
-      <div>number: <input onChange={props.onChangeNumber} value={props.valueNumber}/></div>
-      <div><button type="submit">add</button></div>
+    <form onSubmit={addContact}>
+      <div>name: <input onChange={(event) => handleNewContactName(event.target.value)}/></div>
+      <div>number: <input onChange={(event) => handleNewContactNumber(event.target.value)}/></div>
+      <div><button type="submit">Add contact</button></div>
     </form> 
   )
 }
+const DisplayContacts = ({phonebookList}) => {
 
- const Persons = (props) => { 
-  return (
-    <ul>
-      { props.persons.map(person => <ul key={person.id}>{person.name} {person.number}</ul>) }
-    </ul>
-  ) 
+  return(
+    <div>
+      <table>
+        <tbody>
+          {phonebookList.map(record => 
+          <tr key={record.id}>
+            <td> {record.name} </td><td> {record.number} </td> 
+          </tr>)}
+        </tbody>
+      </table>
+    </div>
+  )
 }
 
 const App = () => {
   
-  const [persons, setPersons] = useState([])
-  const [newName, setNewName] = useState('Insert a name here...')
-  const [newNumber, setNewNumber] = useState('Insert a number here...')
-
-  const handleNameChange   = (event) => setNewName(event.target.value)
-  const handleNumberChange = (event) => setNewNumber(event.target.value)
+  const [phonebook, setPhonebook] = useState([])
+  const handlePhonebook = nextRecord => setPhonebook(nextRecord)
   
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
+    phonebookService
+      .getAll()
       .then(response => {
-        setPersons(response.data)
+        setPhonebook(response)  
+        console.log(response)   
       })
+      .catch(error => console.log(error))
   }, [])
 
   return (
+
     <div>
-      <h2>Phonebook</h2>
-
-      <Filter arrayOfPersons = {persons}/>
-
-      <h3>Add a new</h3>
-
-      <PersonForm 
-        
-        onChangeName={handleNameChange}
-        onChangeNumber={handleNumberChange}
-        setNewName={setNewName}
-        setNewNumber={setNewNumber}
-        valueName = {newName}
-        valueNumber = {newNumber}
-        persons={persons}
-        setPersons={setPersons}
-      />
-
-      <h3>Numbers</h3>
-      <Persons persons={persons}/>
-      
+      <Title title='Phonebook'/>
+      <FilterContacts phonebookList={phonebook}/>
+      <Title title='Add a new person'/>
+      <InsertToPhonebook phonebookList={phonebook} handlePhonebook={handlePhonebook}/>
+      <Title title='Numbers'/>
+      <DisplayContacts phonebookList={phonebook}/>
     </div>
   )
 }
