@@ -38,11 +38,7 @@ const InsertToPhonebook = (props) => {
 
     event.preventDefault();
     phonebookService.create( { name, number } )
-    .then(response => {
-      props.handlePhonebook(props.phonebookList.concat(response.data)) 
-      setName('')
-      setNumber('')
-    })
+    .then(response => props.handlePhonebook(props.phonebookList.concat(response.data)))
   }
 
   return(
@@ -53,20 +49,36 @@ const InsertToPhonebook = (props) => {
     </form> 
   )
 }
-const DisplayContacts = ({phonebookList}) => {
+const DisplayContacts = (props) => {
 
   return(
     <div>
       <table>
         <tbody>
-          {phonebookList.map(record => 
+          {props.phonebookList.map(record => 
           <tr key={record.id}>
-            <td> {record.name} </td><td> {record.number} </td> 
+            <td> {record.name} </td>
+            <td> {record.number} </td>
+            <td><Button id={record.id} name={record.name} phonebookList={props.phonebookList} handlePhonebook={props.handlePhonebook}/></td> 
           </tr>)}
         </tbody>
       </table>
     </div>
   )
+}
+const Button = (props) => {
+
+  function handleClick(){
+    
+    if (window.confirm(`Do you really want to delete ${props.name}?`)) {
+      
+      phonebookService.deleteRecord(props.id)
+      props.handlePhonebook(
+        props.phonebookList.filter(record => record.id !== props.id)
+        )
+    }    
+  }
+  return <button onClick={handleClick}>delete</button>
 }
 
 const App = () => {
@@ -77,10 +89,7 @@ const App = () => {
   useEffect(() => {
     phonebookService
       .getAll()
-      .then(response => {
-        setPhonebook(response)  
-        console.log(response)   
-      })
+      .then(response => setPhonebook(response))
       .catch(error => console.log(error))
   }, [])
 
@@ -92,7 +101,7 @@ const App = () => {
       <Title title='Add a new person'/>
       <InsertToPhonebook phonebookList={phonebook} handlePhonebook={handlePhonebook}/>
       <Title title='Numbers'/>
-      <DisplayContacts phonebookList={phonebook}/>
+      <DisplayContacts phonebookList={phonebook} handlePhonebook={handlePhonebook}/>
     </div>
   )
 }
