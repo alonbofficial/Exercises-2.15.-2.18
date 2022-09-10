@@ -8,4 +8,6 @@ const getAll = () => {
     return request.then(response => response.data)
 }
 
-export default {create, getAll}
+const deleteRecord = id => axios.delete(`http://localhost:3001/persons/${id}`)
+
+export default {create, getAll, deleteRecord}
