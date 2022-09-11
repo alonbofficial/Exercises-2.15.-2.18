@@ -8,6 +8,11 @@ const getAll = () => {
     return request.then(response => response.data)
 }
 
-const deleteRecord = id => axios.delete(`http://localhost:3001/persons/${id}`)
+const deleteRecord = id => axios.delete(`${baseUrl}/${id}`)
 
-export default {create, getAll, deleteRecord}
+const update = (id, newObject) => {
+    const request = axios.put(`${baseUrl}/${id}`, newObject)
+    return request.then(response => response.data)
+  }
+
+export default {create, getAll, deleteRecord, update}
