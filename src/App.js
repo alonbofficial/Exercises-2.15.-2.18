@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import React from 'react'
 import phonebookService from './services/phonebook'
 
-const Title = ({title}) => <h2>{title}</h2>
+const Title = ({title}) => <h1>{title}</h1>
 const FilterContacts = ({phonebookList}) => {
 
   const [filter, setFilter] = useState('Filter by name...')
@@ -44,12 +44,23 @@ const InsertToPhonebook = (props) => {
       // No record found:
       phonebookService.create( { name, number } )
       .then(response => props.handlePhonebook(props.phonebookList.concat(response.data)))
+      .then(() => {
+        props.handleMessage(`${name} were added to the phonebook`)   
+        setTimeout(() => {          
+          props.handleMessage(null)        
+        }, 5000)
+      })
     }else{
       // A record was found matching the given name then:
-      alert(`${name} is already added to phonebook, replace the old number with a new one?`)
       phonebookService.update(foundContact.id, { name, number })
       .then(response => props.handlePhonebook(props.phonebookList.map(record => record.id === foundContact.id ? response : record)))
-    }    
+      .then(() => {
+        props.handleMessage(`${name} is already added to phonebook, old number got replaced with the new number`)   
+        setTimeout(() => {          
+          props.handleMessage(null)        
+        }, 5000)
+      })
+    }  
   }
 
   return(
@@ -91,12 +102,19 @@ const Button = (props) => {
   }
   return <button onClick={handleClick}>delete</button>
 }
+const Message = ({newMessage})  => {
+  return (
+    <h1 className='messageComponent'>{newMessage}</h1>
+  )
+}
 
 const App = () => {
   
   const [phonebook, setPhonebook] = useState([])
   const handlePhonebook = nextRecord => setPhonebook(nextRecord)
-  
+  const [message, setMessage] = useState('')
+  const handleMessage = nextMessage => setMessage(nextMessage)
+
   useEffect(() => {
     phonebookService
       .getAll()
@@ -108,9 +126,13 @@ const App = () => {
 
     <div>
       <Title title='Phonebook'/>
+      {
+        message !== '' && message !== null &&       
+        <Message newMessage={message}/>    
+      }
       <FilterContacts phonebookList={phonebook}/>
       <Title title='Add a new person'/>
-      <InsertToPhonebook phonebookList={phonebook} handlePhonebook={handlePhonebook}/>
+      <InsertToPhonebook phonebookList={phonebook} handlePhonebook={handlePhonebook} handleMessage={handleMessage}/>
       <Title title='Numbers'/>
       <DisplayContacts phonebookList={phonebook} handlePhonebook={handlePhonebook}/>
     </div>
