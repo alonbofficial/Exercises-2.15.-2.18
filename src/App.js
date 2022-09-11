@@ -3,6 +3,8 @@ import React from 'react'
 import phonebookService from './services/phonebook'
 
 const Title = ({title}) => <h1>{title}</h1>
+const Message = ({newMessage})  => <h1 className='messageComponent'>{newMessage}</h1>
+
 const FilterContacts = ({phonebookList}) => {
 
   const [filter, setFilter] = useState('Filter by name...')
@@ -81,7 +83,15 @@ const DisplayContacts = (props) => {
           <tr key={record.id}>
             <td> {record.name} </td>
             <td> {record.number} </td>
-            <td><Button id={record.id} name={record.name} phonebookList={props.phonebookList} handlePhonebook={props.handlePhonebook}/></td> 
+            <td>
+              <Button 
+              id={record.id} 
+              name={record.name} 
+              phonebookList={props.phonebookList} 
+              handlePhonebook={props.handlePhonebook} 
+              handleMessage={props.handleMessage}
+              />
+            </td> 
           </tr>)}
         </tbody>
       </table>
@@ -95,17 +105,19 @@ const Button = (props) => {
     if (window.confirm(`Do you really want to delete ${props.name}?`)) {
       
       phonebookService.deleteRecord(props.id)
+      .catch(error => {
+        props.handleMessage(`${props.name} has already been removed from server`)   
+        setTimeout(() => {          
+          props.handleMessage(null)        
+        }, 5000)
+      })
+
       props.handlePhonebook(
         props.phonebookList.filter(record => record.id !== props.id)
         )
     }    
   }
   return <button onClick={handleClick}>delete</button>
-}
-const Message = ({newMessage})  => {
-  return (
-    <h1 className='messageComponent'>{newMessage}</h1>
-  )
 }
 
 const App = () => {
@@ -134,7 +146,7 @@ const App = () => {
       <Title title='Add a new person'/>
       <InsertToPhonebook phonebookList={phonebook} handlePhonebook={handlePhonebook} handleMessage={handleMessage}/>
       <Title title='Numbers'/>
-      <DisplayContacts phonebookList={phonebook} handlePhonebook={handlePhonebook}/>
+      <DisplayContacts phonebookList={phonebook} handlePhonebook={handlePhonebook} handleMessage={handleMessage}/>
     </div>
   )
 }
