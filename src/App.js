@@ -1,3 +1,12 @@
+/**
+ * Basic phonebook application, offering the user variety of options such as creating/deleting etc. This 
+ * application involving server handling and React promises.
+ *
+ * @version 1.0.0
+ * @author [Alon Butbul](https://github.com/alonbofficial)
+ * @visibleName Ponebook application 🐙
+ * @see See [CSS-basics] (https://developer.mozilla.org/en-US/docs/Learn/Getting_started_with_the_web/CSS_basics) 
+ */
 import { useState, useEffect } from 'react'
 import React from 'react'
 import phonebookService from './services/phonebook'
@@ -5,6 +14,11 @@ import phonebookService from './services/phonebook'
 const Title = ({title}) => <h1>{title}</h1>
 const Message = ({newMessage})  => <h1 className='messageComponent'>{newMessage}</h1>
 
+/**
+ * Letting the user to search for a contact using among others the filter function
+ * @param {Array} phonebookList - The list of all contacts in the phonebook
+ * @return {div} - containing the input and the DisplayContacts component
+ */
 const FilterContacts = ({phonebookList}) => {
 
   const [filter, setFilter] = useState('Filter by name...')
@@ -16,7 +30,7 @@ const FilterContacts = ({phonebookList}) => {
       <div>
         filter shown with: <input onChange={handleFilterChange} value={filter}/>
       </div>
-    )  
+    )
   else
     return(
       <div>
@@ -25,6 +39,13 @@ const FilterContacts = ({phonebookList}) => {
       </div>
     )
 }
+/**
+ * Letting the user to enter a contact to the phonebook. The info is being written to server and gets updated in the application
+ * @param {Array} props - phonebookList, the list of all contacts 
+ * @param {function} props - handlePhonebook, setting the phonebook with a new array
+ * @param {function} props - handleMessage, setting the message with different output each time
+ * @return {div} - form with user input
+ */
 const InsertToPhonebook = (props) => {
 
   const [name, setName] = useState('')
@@ -73,6 +94,13 @@ const InsertToPhonebook = (props) => {
     </form> 
   )
 }
+/**
+ * Displaying the contacts upon request. This component is also making use of the button component
+ * @param {Array} props - phonebookList, the list of all contacts 
+ * @param {function} props - handlePhonebook, setting the phonebook with a new array
+ * @param {function} props - handleMessage, setting the message with different output each time
+ * @return {table} - contacts with a button to delete specific contact
+ */
 const DisplayContacts = (props) => {
 
   return(
@@ -98,6 +126,15 @@ const DisplayContacts = (props) => {
     </div>
   )
 }
+/**
+ * Button component to delete a record from the phonebook
+ * @param {Array} props - phonebookList, the list of all contacts 
+ * @param {function} props - handlePhonebook, setting the phonebook with a new array
+ * @param {function} props - handleMessage, setting the message with different output each time
+ * @param {String} props - name, the name of a specific contact
+ * @param {String} props - id, the id of a specific contact. That id will be used to find the contact in the server
+ * @return {table} - contacts with a button to delete specific contact
+ */
 const Button = (props) => {
 
   function handleClick(){
