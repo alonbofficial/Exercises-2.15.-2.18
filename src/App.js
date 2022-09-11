@@ -37,8 +37,19 @@ const InsertToPhonebook = (props) => {
   const addContact = event => {
 
     event.preventDefault();
-    phonebookService.create( { name, number } )
-    .then(response => props.handlePhonebook(props.phonebookList.concat(response.data)))
+    
+    //Check if the name is already in the phonebook:
+    const foundContact = props.phonebookList.find(record => record.name === name)
+    if(foundContact === undefined){
+      // No record found:
+      phonebookService.create( { name, number } )
+      .then(response => props.handlePhonebook(props.phonebookList.concat(response.data)))
+    }else{
+      // A record was found matching the given name then:
+      alert(`${name} is already added to phonebook, replace the old number with a new one?`)
+      phonebookService.update(foundContact.id, { name, number })
+      .then(response => props.handlePhonebook(props.phonebookList.map(record => record.id === foundContact.id ? response : record)))
+    }    
   }
 
   return(
